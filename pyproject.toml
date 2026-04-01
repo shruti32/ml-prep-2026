@@ -1,0 +1,25 @@
+[project]
+name = "ml-prep-2026"
+version = "0.1.0"
+description = "Personal hands-on projects for DS ML preparation"
+authors = [
+    {name = "shruti32",email = "shruti.agrawal92@gmail.com"}
+]
+requires-python = ">=3.11"
+dependencies = [
+    "seaborn (>=0.13.2,<0.14.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.2,<10.0.0)",
+    "black (>=26.3.1,<27.0.0)",
+    "ruff (>=0.15.8,<0.16.0)",
+    "mypy (>=1.19.1,<2.0.0)",
+    "pre-commit (>=4.5.1,<5.0.0)"
+]
