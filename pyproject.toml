@@ -7,7 +7,14 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "seaborn (>=0.13.2,<0.14.0)"
+    "seaborn (>=0.13.2,<0.14.0)",
+    "scipy (>=1.17.1,<2.0.0)",
+    "numpy (>=2.4.4,<3.0.0)",
+    "pandas (>=3.0.2,<4.0.0)",
+    "matplotlib (>=3.10.8,<4.0.0)",
+    "click (>=8.3.2,<9.0.0)",
+    "typer (>=0.24.1,<0.25.0)",
+    "jinja2 (>=3.1.6,<4.0.0)"
 ]
 
 
@@ -23,3 +30,9 @@ dev = [
     "mypy (>=1.19.1,<2.0.0)",
     "pre-commit (>=4.5.1,<5.0.0)"
 ]
+
+[tool.poetry.scripts]
+analyse = "src.cli:main"
+
+[tool.poetry]
+packages = [{include = "src"}]

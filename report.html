@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Statistical Analysis Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
+        h1   { color: #1F4E79; }
+        h2   { color: #2E75B6; border-bottom: 2px solid #2E75B6; padding-bottom: 6px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; font-size: 14px; }
+        th   { background: #2E75B6; color: white; padding: 10px; text-align: left; }
+        td   { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background: #f5f9ff; }
+        .missing-high { color: #c00; font-weight: bold; }
+        .skewed       { color: #e65c00; }
+        .summary-box  { background: #f0f4ff; border-left: 4px solid #2E75B6;
+                        padding: 12px 20px; margin-bottom: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Statistical Analysis Report</h1>
+
+    <div class="summary-box">
+        <strong>Dataset:</strong> titanic.csv<br>
+        <strong>Rows:</strong> 891 &nbsp;|&nbsp;
+        <strong>Columns:</strong> 12 &nbsp;|&nbsp;
+        <strong>Numeric columns:</strong> 7 &nbsp;|&nbsp;
+        <strong>Categorical columns:</strong> 5
+    </div>
+
+    <h2>Missing Values</h2>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Missing</th><th>Missing %</th></tr>
+        
+        <tr>
+            <td>PassengerId</td>
+            <td>int64</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Survived</td>
+            <td>int64</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Pclass</td>
+            <td>int64</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Name</td>
+            <td>str</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Sex</td>
+            <td>str</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Age</td>
+            <td>float64</td>
+            <td>177</td>
+            <td class="missing-high">
+                19.87%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>SibSp</td>
+            <td>int64</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Parch</td>
+            <td>int64</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Ticket</td>
+            <td>str</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Fare</td>
+            <td>float64</td>
+            <td>0</td>
+            <td class="">
+                0.0%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Cabin</td>
+            <td>str</td>
+            <td>687</td>
+            <td class="missing-high">
+                77.1%
+            </td>
+        </tr>
+        
+        <tr>
+            <td>Embarked</td>
+            <td>str</td>
+            <td>2</td>
+            <td class="">
+                0.22%
+            </td>
+        </tr>
+        
+    </table>
+
+    <h2>Descriptive Statistics (Numeric Columns)</h2>
+    <table>
+        <tr>
+            <th>Column</th><th>Count</th><th>Mean</th><th>Median</th>
+            <th>Std Dev</th><th>Min</th><th>Max</th>
+            <th>Skewness</th><th>Kurtosis</th><th>Shape Assessment</th>
+        </tr>
+        
+        <tr>
+            <td>PassengerId</td>
+            <td>891</td>
+            <td>446.0</td>
+            <td>446.0</td>
+            <td>257.3538</td>
+            <td>1.0</td>
+            <td>891.0</td>
+            <td class="">0.0</td>
+            <td>-1.2</td>
+            <td>approximately symmetric, thin-tailed (platykurtic)</td>
+        </tr>
+        
+        <tr>
+            <td>Survived</td>
+            <td>891</td>
+            <td>0.3838</td>
+            <td>0.0</td>
+            <td>0.4866</td>
+            <td>0.0</td>
+            <td>1.0</td>
+            <td class="">0.4777</td>
+            <td>-1.7718</td>
+            <td>approximately symmetric, thin-tailed (platykurtic)</td>
+        </tr>
+        
+        <tr>
+            <td>Pclass</td>
+            <td>891</td>
+            <td>2.3086</td>
+            <td>3.0</td>
+            <td>0.8361</td>
+            <td>1.0</td>
+            <td>3.0</td>
+            <td class="">-0.6295</td>
+            <td>-1.2796</td>
+            <td>moderately left-skewed, thin-tailed (platykurtic)</td>
+        </tr>
+        
+        <tr>
+            <td>Age</td>
+            <td>714</td>
+            <td>29.6991</td>
+            <td>28.0</td>
+            <td>14.5265</td>
+            <td>0.42</td>
+            <td>80.0</td>
+            <td class="">0.3883</td>
+            <td>0.1686</td>
+            <td>approximately symmetric, normal-tailed (mesokurtic)</td>
+        </tr>
+        
+        <tr>
+            <td>SibSp</td>
+            <td>891</td>
+            <td>0.523</td>
+            <td>0.0</td>
+            <td>1.1027</td>
+            <td>0.0</td>
+            <td>8.0</td>
+            <td class="skewed">3.6891</td>
+            <td>17.7735</td>
+            <td>highly right-skewed, heavy-tailed (leptokurtic)</td>
+        </tr>
+        
+        <tr>
+            <td>Parch</td>
+            <td>891</td>
+            <td>0.3816</td>
+            <td>0.0</td>
+            <td>0.8061</td>
+            <td>0.0</td>
+            <td>6.0</td>
+            <td class="skewed">2.7445</td>
+            <td>9.7166</td>
+            <td>highly right-skewed, heavy-tailed (leptokurtic)</td>
+        </tr>
+        
+        <tr>
+            <td>Fare</td>
+            <td>891</td>
+            <td>32.2042</td>
+            <td>14.4542</td>
+            <td>49.6934</td>
+            <td>0.0</td>
+            <td>512.3292</td>
+            <td class="skewed">4.7793</td>
+            <td>33.2043</td>
+            <td>highly right-skewed, heavy-tailed (leptokurtic)</td>
+        </tr>
+        
+    </table>
+
+    
+    <h2>Correlation Matrix</h2>
+    <table border="1" class="dataframe corr-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PassengerId</th>
+      <th>Survived</th>
+      <th>Pclass</th>
+      <th>Age</th>
+      <th>SibSp</th>
+      <th>Parch</th>
+      <th>Fare</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>PassengerId</th>
+      <td>1.000</td>
+      <td>-0.005</td>
+      <td>-0.035</td>
+      <td>0.037</td>
+      <td>-0.058</td>
+      <td>-0.002</td>
+      <td>0.013</td>
+    </tr>
+    <tr>
+      <th>Survived</th>
+      <td>-0.005</td>
+      <td>1.000</td>
+      <td>-0.338</td>
+      <td>-0.077</td>
+      <td>-0.035</td>
+      <td>0.082</td>
+      <td>0.257</td>
+    </tr>
+    <tr>
+      <th>Pclass</th>
+      <td>-0.035</td>
+      <td>-0.338</td>
+      <td>1.000</td>
+      <td>-0.369</td>
+      <td>0.083</td>
+      <td>0.018</td>
+      <td>-0.549</td>
+    </tr>
+    <tr>
+      <th>Age</th>
+      <td>0.037</td>
+      <td>-0.077</td>
+      <td>-0.369</td>
+      <td>1.000</td>
+      <td>-0.308</td>
+      <td>-0.189</td>
+      <td>0.096</td>
+    </tr>
+    <tr>
+      <th>SibSp</th>
+      <td>-0.058</td>
+      <td>-0.035</td>
+      <td>0.083</td>
+      <td>-0.308</td>
+      <td>1.000</td>
+      <td>0.415</td>
+      <td>0.160</td>
+    </tr>
+    <tr>
+      <th>Parch</th>
+      <td>-0.002</td>
+      <td>0.082</td>
+      <td>0.018</td>
+      <td>-0.189</td>
+      <td>0.415</td>
+      <td>1.000</td>
+      <td>0.216</td>
+    </tr>
+    <tr>
+      <th>Fare</th>
+      <td>0.013</td>
+      <td>0.257</td>
+      <td>-0.549</td>
+      <td>0.096</td>
+      <td>0.160</td>
+      <td>0.216</td>
+      <td>1.000</td>
+    </tr>
+  </tbody>
+</table>
+    
+
+</body>
+</html>

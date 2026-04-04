@@ -15,7 +15,10 @@ RUN pip install --no-cache-dir \
     scipy \
     fastapi \
     uvicorn \
-    jupyter
+    jupyter \
+    typer \
+    click \
+    jinja2
 
 RUN pip install --no-cache-dir \
     torch --index-url https://download.pytorch.org/whl/cpu
