@@ -18,9 +18,12 @@ RUN pip install --no-cache-dir \
     jupyter \
     typer \
     click \
-    jinja2
+    jinja2 \
+    redis
 
 RUN pip install --no-cache-dir \
     torch --index-url https://download.pytorch.org/whl/cpu
 
 CMD ["python"]
+
+EXPOSE 8000
