@@ -2,15 +2,15 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
 
   recommender:
     build: .
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - .:/app
     working_dir: /app
-    command: uvicorn src.movie_rec_apiapi:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn src.movie_rec_api:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       - redis

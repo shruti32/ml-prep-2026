@@ -1,29 +1,32 @@
-FROM python:3.11-slim
+# ── Stage 1: Builder ──────────────────────────────────────────────────────
+FROM python:3.11-slim AS builder
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a venv and install everything into it
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+# ── Stage 2: Runtime ──────────────────────────────────────────────────────
+FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Copy the entire venv from builder — executables and packages all in one place
+COPY --from=builder /opt/venv /opt/venv
 
-# Install Python packages
-RUN pip install --no-cache-dir \
-    numpy \
-    pandas>=2.0 \
-    scikit-learn \
-    scipy \
-    fastapi \
-    uvicorn \
-    jupyter \
-    typer \
-    click \
-    jinja2 \
-    redis
+# Put the venv on PATH so uvicorn, python etc. are found
+ENV PATH="/opt/venv/bin:$PATH"
 
-RUN pip install --no-cache-dir \
-    torch --index-url https://download.pytorch.org/whl/cpu
-
-CMD ["python"]
+COPY src/ ./src/
 
 EXPOSE 8000
