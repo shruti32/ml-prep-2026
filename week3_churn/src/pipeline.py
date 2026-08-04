@@ -35,7 +35,7 @@ NUMERIC_COLS = [
     "tenure",
     "MonthlyCharges",
     "TotalCharges",
-    "charges_ratio",      # engineered
+    "charges_ratio",  # engineered
 ]
 
 # SeniorCitizen is 0/1 int but semantically categorical — treat as category.
@@ -56,11 +56,12 @@ CATEGORICAL_COLS = [
     "Contract",
     "PaperlessBilling",
     "PaymentMethod",
-    "tenure_group",       # engineered
+    "tenure_group",  # engineered
 ]
 
 
 # ── Custom Transformers ───────────────────────────────────────────────────────
+
 
 class TotalChargesFixup(BaseEstimator, TransformerMixin):
     """
@@ -73,15 +74,14 @@ class TotalChargesFixup(BaseEstimator, TransformerMixin):
     Must run BEFORE any numeric processing.
     """
 
-    def fit(self, X: pd.DataFrame, y=None) -> "TotalChargesFixup":
+    def fit(self, X: pd.DataFrame, y=None) -> TotalChargesFixup:
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = X.copy()
-        X["TotalCharges"] = (
-            pd.to_numeric(X["TotalCharges"].astype(str).str.strip(), errors="coerce")
-            .fillna(0.0)
-        )
+        X["TotalCharges"] = pd.to_numeric(
+            X["TotalCharges"].astype(str).str.strip(), errors="coerce"
+        ).fillna(0.0)
         return X
 
 
@@ -104,10 +104,11 @@ class TenureGrouper(BaseEstimator, TransformerMixin):
     Adds `tenure_group` column; leaves `tenure` untouched.
     """
 
-    BINS   = [0, 12, 24, 48, 72]
-    LABELS = ["new", "growing", "established", "loyal"]
+    def __init__(self) -> None:
+        self.BINS = [0, 12, 24, 48, 72]
+        self.LABELS = ["new", "growing", "established", "loyal"]
 
-    def fit(self, X: pd.DataFrame, y=None) -> "TenureGrouper":
+    def fit(self, X: pd.DataFrame, y=None) -> TenureGrouper:
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -117,7 +118,7 @@ class TenureGrouper(BaseEstimator, TransformerMixin):
             bins=self.BINS,
             labels=self.LABELS,
             include_lowest=True,
-        ).astype(str)   # cast to str so OHE treats it as a regular category
+        ).astype(str)  # cast to str so OHE treats it as a regular category
         return X
 
 
@@ -136,7 +137,7 @@ class ChargesRatioAdder(BaseEstimator, TransformerMixin):
     Run AFTER TotalChargesFixup so TotalCharges is already float.
     """
 
-    def fit(self, X: pd.DataFrame, y=None) -> "ChargesRatioAdder":
+    def fit(self, X: pd.DataFrame, y=None) -> ChargesRatioAdder:
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -155,7 +156,7 @@ class DropColumns(BaseEstimator, TransformerMixin):
     def __init__(self, columns: list[str] = DROP_COLS):
         self.columns = columns
 
-    def fit(self, X: pd.DataFrame, y=None) -> "DropColumns":
+    def fit(self, X: pd.DataFrame, y=None) -> DropColumns:
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -164,6 +165,7 @@ class DropColumns(BaseEstimator, TransformerMixin):
 
 
 # ── Pipeline factory ──────────────────────────────────────────────────────────
+
 
 def build_pipeline(classifier) -> Pipeline:
     """
@@ -208,18 +210,18 @@ def build_pipeline(classifier) -> Pipeline:
             ("num", numeric_transformer, NUMERIC_COLS),
             ("cat", categorical_transformer, CATEGORICAL_COLS),
         ],
-        remainder="drop",      # drop any columns not listed above
+        remainder="drop",  # drop any columns not listed above
         verbose_feature_names_out=False,
     )
 
     pipeline = Pipeline(
         steps=[
-            ("drop_id",      DropColumns(DROP_COLS)),
-            ("fix_charges",  TotalChargesFixup()),
-            ("add_ratio",    ChargesRatioAdder()),
+            ("drop_id", DropColumns(DROP_COLS)),
+            ("fix_charges", TotalChargesFixup()),
+            ("add_ratio", ChargesRatioAdder()),
             ("add_tenure_grp", TenureGrouper()),
             ("preprocessor", preprocessor),
-            ("clf",          classifier),
+            ("clf", classifier),
         ]
     )
 
@@ -232,6 +234,7 @@ def build_pipeline(classifier) -> Pipeline:
 
 
 # ── Label encoder helper ──────────────────────────────────────────────────────
+
 
 def encode_target(series: pd.Series) -> np.ndarray:
     """Convert 'Yes'/'No' Churn column to 1/0 numpy array."""
@@ -248,16 +251,16 @@ if __name__ == "__main__":
     DATA_PATH = pathlib.Path(__file__).parents[2] / "data" / "telco_churn.csv"
 
     df = pd.read_csv(DATA_PATH)
-    X  = df.drop(columns=["Churn"])
-    y  = encode_target(df["Churn"])
+    X = df.drop(columns=["Churn"])
+    y = encode_target(df["Churn"])
 
     pipe = build_pipeline(DummyClassifier(strategy="most_frequent"))
     pipe.fit(X, y)
     preds = pipe.predict(X)
 
-    n_features = pipe.named_steps["preprocessor"].transform(
-        pipe[:-1].transform(X)
-    ).shape[1]
+    n_features = (
+        pipe.named_steps["preprocessor"].transform(pipe[:-1].transform(X)).shape[1]
+    )
 
     print("✓ Pipeline smoke-test passed")
     print(f"  Input shape  : {X.shape}")

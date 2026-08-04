@@ -28,6 +28,7 @@ import numpy as np
 import optuna
 import pandas as pd
 from lightgbm import LGBMClassifier
+from pipeline import build_pipeline, encode_target
 from sklearn.metrics import (
     average_precision_score,
     f1_score,
@@ -35,10 +36,8 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from xgboost import XGBClassifier
-
-from pipeline import build_pipeline, encode_target
 
 warnings.filterwarnings("ignore")
 optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -52,24 +51,30 @@ log = logging.getLogger(__name__)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 
-DATA_PATH    = pathlib.Path(__file__).parents[1] / "data" / "telco_churn.csv"
+DATA_PATH = pathlib.Path(__file__).parents[1] / "data" / "telco_churn.csv"
 ARTIFACT_DIR = pathlib.Path(__file__).parents[1] / "artifacts"
 ARTIFACT_DIR.mkdir(exist_ok=True)
 
 
 # ── Data loading ──────────────────────────────────────────────────────────────
 
+
 def load_data() -> tuple[pd.DataFrame, np.ndarray]:
     """Load Telco Churn CSV and return (X, y)."""
     df = pd.read_csv(DATA_PATH)
-    X  = df.drop(columns=["Churn"])
-    y  = encode_target(df["Churn"])
-    log.info("Loaded data: %d rows, %d features, %.1f%% churn",
-             len(df), X.shape[1], y.mean() * 100)
+    X = df.drop(columns=["Churn"])
+    y = encode_target(df["Churn"])
+    log.info(
+        "Loaded data: %d rows, %d features, %.1f%% churn",
+        len(df),
+        X.shape[1],
+        y.mean() * 100,
+    )
     return X, y
 
 
 # ── Optuna objective ──────────────────────────────────────────────────────────
+
 
 def make_objective(X_train: pd.DataFrame, y_train: np.ndarray):
     """
@@ -103,38 +108,38 @@ def make_objective(X_train: pd.DataFrame, y_train: np.ndarray):
             neg_pos_ratio = float((y_train == 0).sum() / max((y_train == 1).sum(), 1))
 
             clf = XGBClassifier(
-                n_estimators        = trial.suggest_int("n_estimators", 100, 800),
-                max_depth           = trial.suggest_int("max_depth", 3, 9),
-                learning_rate       = trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
-                subsample           = trial.suggest_float("subsample", 0.5, 1.0),
-                colsample_bytree    = trial.suggest_float("colsample_bytree", 0.5, 1.0),
-                min_child_weight    = trial.suggest_int("min_child_weight", 1, 10),
-                reg_alpha           = trial.suggest_float("reg_alpha", 1e-4, 10.0, log=True),
-                reg_lambda          = trial.suggest_float("reg_lambda", 1e-4, 10.0, log=True),
-                scale_pos_weight    = trial.suggest_float(
+                n_estimators=trial.suggest_int("n_estimators", 100, 800),
+                max_depth=trial.suggest_int("max_depth", 3, 9),
+                learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+                subsample=trial.suggest_float("subsample", 0.5, 1.0),
+                colsample_bytree=trial.suggest_float("colsample_bytree", 0.5, 1.0),
+                min_child_weight=trial.suggest_int("min_child_weight", 1, 10),
+                reg_alpha=trial.suggest_float("reg_alpha", 1e-4, 10.0, log=True),
+                reg_lambda=trial.suggest_float("reg_lambda", 1e-4, 10.0, log=True),
+                scale_pos_weight=trial.suggest_float(
                     "scale_pos_weight", neg_pos_ratio * 0.5, neg_pos_ratio * 1.5
                 ),
-                eval_metric         = "logloss",
-                random_state        = 42,
-                n_jobs              = -1,
-                verbosity           = 0,
+                eval_metric="logloss",
+                random_state=42,
+                n_jobs=-1,
+                verbosity=0,
             )
 
         else:  # lgbm
             clf = LGBMClassifier(
-                n_estimators        = trial.suggest_int("n_estimators", 100, 800),
-                max_depth           = trial.suggest_int("max_depth", 3, 9),
-                learning_rate       = trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
-                num_leaves          = trial.suggest_int("num_leaves", 20, 150),
-                min_child_samples   = trial.suggest_int("min_child_samples", 5, 100),
-                subsample           = trial.suggest_float("subsample", 0.5, 1.0),
-                colsample_bytree    = trial.suggest_float("colsample_bytree", 0.5, 1.0),
-                reg_alpha           = trial.suggest_float("reg_alpha", 1e-4, 10.0, log=True),
-                reg_lambda          = trial.suggest_float("reg_lambda", 1e-4, 10.0, log=True),
-                class_weight        = "balanced",
-                random_state        = 42,
-                n_jobs              = -1,
-                verbose             = -1,
+                n_estimators=trial.suggest_int("n_estimators", 100, 800),
+                max_depth=trial.suggest_int("max_depth", 3, 9),
+                learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+                num_leaves=trial.suggest_int("num_leaves", 20, 150),
+                min_child_samples=trial.suggest_int("min_child_samples", 5, 100),
+                subsample=trial.suggest_float("subsample", 0.5, 1.0),
+                colsample_bytree=trial.suggest_float("colsample_bytree", 0.5, 1.0),
+                reg_alpha=trial.suggest_float("reg_alpha", 1e-4, 10.0, log=True),
+                reg_lambda=trial.suggest_float("reg_lambda", 1e-4, 10.0, log=True),
+                class_weight="balanced",
+                random_state=42,
+                n_jobs=-1,
+                verbose=-1,
             )
 
         # ── 3. Build full pipeline with this classifier ──────────────────────
@@ -146,8 +151,8 @@ def make_objective(X_train: pd.DataFrame, y_train: np.ndarray):
         for fold_idx, (train_idx, val_idx) in enumerate(cv.split(X_train, y_train)):
             X_fold_train = X_train.iloc[train_idx]
             y_fold_train = y_train[train_idx]
-            X_fold_val   = X_train.iloc[val_idx]
-            y_fold_val   = y_train[val_idx]
+            X_fold_val = X_train.iloc[val_idx]
+            y_fold_val = y_train[val_idx]
 
             pipeline.fit(X_fold_train, y_fold_train)
             probs = pipeline.predict_proba(X_fold_val)[:, 1]
@@ -168,6 +173,7 @@ def make_objective(X_train: pd.DataFrame, y_train: np.ndarray):
 
 # ── Evaluation helpers ────────────────────────────────────────────────────────
 
+
 def evaluate_model(pipeline, X_test: pd.DataFrame, y_test: np.ndarray) -> dict:
     """
     Compute a full set of classification metrics on a held-out test set.
@@ -177,15 +183,16 @@ def evaluate_model(pipeline, X_test: pd.DataFrame, y_test: np.ndarray) -> dict:
     preds = (probs >= 0.5).astype(int)
 
     return {
-        "test_roc_auc":          round(roc_auc_score(y_test, probs), 4),
-        "test_avg_precision":    round(average_precision_score(y_test, probs), 4),
-        "test_f1":               round(f1_score(y_test, preds), 4),
-        "test_precision":        round(precision_score(y_test, preds), 4),
-        "test_recall":           round(recall_score(y_test, preds), 4),
+        "test_roc_auc": round(roc_auc_score(y_test, probs), 4),
+        "test_avg_precision": round(average_precision_score(y_test, probs), 4),
+        "test_f1": round(f1_score(y_test, preds), 4),
+        "test_precision": round(precision_score(y_test, preds), 4),
+        "test_recall": round(recall_score(y_test, preds), 4),
     }
 
 
 # ── MLflow callback ───────────────────────────────────────────────────────────
+
 
 def mlflow_callback(study: optuna.Study, trial: optuna.Trial) -> None:
     """
@@ -204,6 +211,7 @@ def mlflow_callback(study: optuna.Study, trial: optuna.Trial) -> None:
 
 
 # ── Main training loop ────────────────────────────────────────────────────────
+
 
 def train(n_trials: int = 30, experiment_name: str = "telco-churn") -> None:
 
@@ -228,13 +236,12 @@ def train(n_trials: int = 30, experiment_name: str = "telco-churn") -> None:
     #                          (first 2 folds don't count toward pruning)
     #
     pruner = optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=2)
-    study  = optuna.create_study(direction="maximize", pruner=pruner)
+    study = optuna.create_study(direction="maximize", pruner=pruner)
 
     objective = make_objective(X_train, y_train)
 
     # ── Parent MLflow run wraps the entire study ──────────────────────────────
     with mlflow.start_run(run_name="optuna_study") as parent_run:
-
         mlflow.log_param("n_trials", n_trials)
         mlflow.log_param("cv_folds", 5)
         mlflow.log_param("train_size", len(X_train))
@@ -250,11 +257,17 @@ def train(n_trials: int = 30, experiment_name: str = "telco-churn") -> None:
         )
 
         # ── Study summary ────────────────────────────────────────────────────
-        completed = [t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE]
-        pruned    = [t for t in study.trials if t.state == optuna.trial.TrialState.PRUNED]
+        completed = [
+            t for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE
+        ]
+        pruned = [t for t in study.trials if t.state == optuna.trial.TrialState.PRUNED]
 
         log.info("Study finished: %d completed, %d pruned", len(completed), len(pruned))
-        log.info("Best trial #%d  CV ROC-AUC: %.4f", study.best_trial.number, study.best_value)
+        log.info(
+            "Best trial #%d  CV ROC-AUC: %.4f",
+            study.best_trial.number,
+            study.best_value,
+        )
         log.info("Best params: %s", study.best_params)
 
         mlflow.log_metric("best_cv_roc_auc", study.best_value)
@@ -267,7 +280,7 @@ def train(n_trials: int = 30, experiment_name: str = "telco-churn") -> None:
         log.info("Retraining best model on full training set...")
 
         best_model_name = study.best_params["model"]
-        best_params     = {k: v for k, v in study.best_params.items() if k != "model"}
+        best_params = {k: v for k, v in study.best_params.items() if k != "model"}
 
         if best_model_name == "xgb":
             best_clf = XGBClassifier(
@@ -301,10 +314,10 @@ def train(n_trials: int = 30, experiment_name: str = "telco-churn") -> None:
         # Logged to MLflow so you can load it later with:
         #   mlflow.sklearn.load_model("runs:/<run_id>/best_model")
         mlflow.sklearn.log_model(
-            sk_model       = best_pipeline,
-            artifact_path  = "best_model",
-            registered_model_name = "telco-churn-pipeline",
-            input_example  = X_test.head(5),
+            sk_model=best_pipeline,
+            artifact_path="best_model",
+            registered_model_name="telco-churn-pipeline",
+            input_example=X_test.head(5),
         )
 
         # Also save a local pickle for quick loading during Sunday's exercise
@@ -323,9 +336,15 @@ def train(n_trials: int = 30, experiment_name: str = "telco-churn") -> None:
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Telco Churn — Optuna + MLflow training")
-    parser.add_argument("--trials",     type=int, default=30,            help="Number of Optuna trials")
-    parser.add_argument("--experiment", type=str, default="telco-churn", help="MLflow experiment name")
+    parser = argparse.ArgumentParser(
+        description="Telco Churn — Optuna + MLflow training"
+    )
+    parser.add_argument(
+        "--trials", type=int, default=30, help="Number of Optuna trials"
+    )
+    parser.add_argument(
+        "--experiment", type=str, default="telco-churn", help="MLflow experiment name"
+    )
     args = parser.parse_args()
 
     train(n_trials=args.trials, experiment_name=args.experiment)
