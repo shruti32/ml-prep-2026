@@ -62,8 +62,8 @@ def missing_values(df: pd.DataFrame) -> None:
         print("No missing values found.")
     else:
         print(nulls.to_string())
-        print(f"\nTIP: TotalCharges nulls = new customers (tenure=0). "
-              f"Fill with 0 before scaling.")
+        print("\nTIP: TotalCharges nulls = new customers (tenure=0). "
+              "Fill with 0 before scaling.")
 
 
 # ── 3. Target distribution ────────────────────────────────────────────────────
