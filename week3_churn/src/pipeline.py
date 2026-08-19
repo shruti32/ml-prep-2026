@@ -104,19 +104,23 @@ class TenureGrouper(BaseEstimator, TransformerMixin):
     Adds `tenure_group` column; leaves `tenure` untouched.
     """
 
-    def __init__(self) -> None:
-        self.BINS = [0, 12, 24, 48, 72]
-        self.LABELS = ["new", "growing", "established", "loyal"]
+    def __init__(
+        self,
+        bins: list | None = None,
+        labels: list | None = None,
+    ) -> None:
+        self.bins   = bins   if bins   is not None else [0, 12, 24, 48, 72]
+        self.labels = labels if labels is not None else ["new", "growing", "established", "loyal"]
 
-    def fit(self, X: pd.DataFrame, y=None) -> TenureGrouper:
+    def fit(self, X: pd.DataFrame, y=None) -> "TenureGrouper":
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = X.copy()
         X["tenure_group"] = pd.cut(
             X["tenure"],
-            bins=self.BINS,
-            labels=self.LABELS,
+            bins=self.bins,
+            labels=self.labels,
             include_lowest=True,
         ).astype(str)  # cast to str so OHE treats it as a regular category
         return X

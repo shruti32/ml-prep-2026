@@ -22,3 +22,38 @@ services:
     volumes:
       - ./mlruns:/mlruns
     command: mlflow server --host 0.0.0.0 --port 5000
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: churn_predictions
+      POSTGRES_USER: churn
+      POSTGRES_PASSWORD: churn123
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  churn-api:
+    build:
+      context: .
+      dockerfile: week3_churn/serve/Dockerfile
+    ports:
+      - "127.0.0.1:8001:8001"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://churn:churn123@postgres:5432/churn_predictions
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+
+volumes:
+  postgres_data:
+  grafana_data:
